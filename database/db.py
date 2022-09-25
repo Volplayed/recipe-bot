@@ -3,6 +3,53 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 
+######################################################
+#converting two strings with time, in format where hours are marked as hr and minutes as mins, into integer
+def time_string_into_int(time_string_prep, time_string_cook):
+    #splitting into 2 lists
+    time1 = time_string_prep.split()
+    time2 = time_string_cook.split()
+
+    #counter for time
+    time = 0
+
+    #if hr (hours) are in the string make it 60 mins
+    if 'hr' in time1:
+        #hr index
+        i = time1.index('hr')
+
+        #number before hours
+        num = int(time1[i - 1])
+
+        #adding it to time
+        time += num * 60
+    
+    #same but for another time
+    if 'hr' in time2:
+        #hr index
+        i = time2.index('hr')
+
+        #number before hours
+        num = int(time2[i - 1])
+
+        #adding it to time
+        time += num * 60
+    
+    #if mins are in list (in order to avoid errors)
+    if 'mins' in time1 and 'mins' in time2:
+        #time lists mins index
+        i1 = time1.index('mins')
+        i2 = time2.index('mins')
+
+        #numbers before mins
+        num1 = int(time1[i1 - 1])
+        num2 = int(time2[i2 - 1])
+
+        #adding it to time
+        time += num1 + num2
+    
+    return int(time)
+
 #create list of ingredients in string
 def create_ingredients(soup):
     #elements list
@@ -23,10 +70,14 @@ def create_preparation_time(soup):
     #cook and prep time elements
     elements = soup.find_all('time')
 
-    #formated string where elements[0] is prep time and elements[1] is cooking time
-    text = f"Prep: {elements[0].text}, Cook: {elements[1].text}"
+    #strings where elements[0] is prep time and elements[1] is cooking time
+    text_prep = elements[0].text
+    text_cook = elements[1].text
+    
+    #integer of minutes to cook
+    time = time_string_into_int(text_prep, text_cook)
 
-    return text
+    return time
 
 #crete complicacity level string
 def create_level(soup):
@@ -65,6 +116,7 @@ def create_image(soup):
     image = element.find('img', attrs={'class' : "image__img"})
 
     return image['src']
+###########################################################################
 
 #site to be scraped url
 url='https://www.bbcgoodfood.com/recipes/collection/student-recipes?page=1'
@@ -117,25 +169,15 @@ for element in recipe_link_element_list:
     #dish image link
     image = create_image(soup)
     
-    #put everything into dict and put onto data list
-    recipe = {
-        'name' : name, 
-        'ingredients' : ingredients, 
-        'time' : time,
-        'level' : level,
-        'method' : method,
-        'image' : image,
-        'url' : recipe_url
-        }
+    #put everything into tuple and put onto data list
+    recipe = (name, ingredients, time, level, method, image, recipe_url)
     
     data.append(recipe)
+    
+#put all gathered data into table
+cur.executemany("INSERT INTO recipe VALUES(?, ?, ?, ?, ?, ?, ?)", data)
 
-print(data)
+db.commit()
 
-
-# cur.execute("""
-#     INSERT INTO recipe VALUES
-#         
-# """)
-
-
+res = cur.execute("SELECT url FROM recipe")
+print(res.fetchall())
