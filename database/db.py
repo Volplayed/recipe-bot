@@ -122,7 +122,7 @@ def create_image(soup):
 url='https://www.bbcgoodfood.com/recipes/collection/student-recipes?page=1'
 response = requests.get(url)
 
-#database creation
+#database creation or connection
 db = sqlite3.connect("recipes.db")
 cur = db.cursor()
 
