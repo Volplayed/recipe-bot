@@ -71,9 +71,15 @@ def create_preparation_time(soup):
     elements = soup.find_all('time')
 
     #strings where elements[0] is prep time and elements[1] is cooking time
-    text_prep = elements[0].text
-    text_cook = elements[1].text
-    
+    try:
+        text_prep = elements[0].text
+    except:
+        text_prep = "0 mins"    
+    try:
+        text_cook = elements[1].text
+    except:
+        text_cook = '0 mins'
+        
     #integer of minutes to cook
     time = time_string_into_int(text_prep, text_cook)
 
@@ -86,8 +92,11 @@ def create_level(soup):
 
     #formated string. elements[1] because level is second element of the mini data list
     text = f"{elements[1].text}"
-
-    return text
+    
+    #check if page has level by checking its length
+    if len(text.split()) != 1:
+        text = 'Unknown'.split()
+    return ''.join(text)
 
 #create preparation method string
 def create_method(soup):
@@ -117,11 +126,6 @@ def create_image(soup):
 
     return image['src']
 ###########################################################################
-
-#site to be scraped url
-url='https://www.bbcgoodfood.com/recipes/collection/student-recipes?page=1'
-response = requests.get(url)
-
 #database creation or connection
 db = sqlite3.connect("recipes.db")
 cur = db.cursor()
@@ -131,6 +135,11 @@ try:
     cur.execute("CREATE TABLE recipe(name, ingredients, time, level, method, image, url)")
 except:
     pass
+
+
+#site to be scraped url
+url=f'https://www.bbcgoodfood.com/recipes/collection/family-meal-recipes?page=1'
+response = requests.get(url)
 
 #initilization of bs4
 soup = BeautifulSoup(response.text, 'html.parser')
@@ -142,42 +151,45 @@ recipe_link_element_list = soup.find_all('a', attrs={"class":"link d-block"})
 data = list()
 
 for element in recipe_link_element_list:
+    try:
+        #make url to recipe from the element 
+        link = element['href']
+        recipe_url = f"https://www.bbcgoodfood.com{link}"
+        
+        #open recipe url
+        response = requests.get(recipe_url)
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-    #make url to recipe from the element 
-    link = element['href']
-    recipe_url = f"https://www.bbcgoodfood.com{link}"
-    
-    #open recipe url
-    response = requests.get(recipe_url)
-    soup = BeautifulSoup(response.text, 'html.parser')
+        #dish name
+        name = soup.find('h1', attrs={"class" : "heading-1"}).text.strip()
+        
+        #dish ingredients
+        ingredients = create_ingredients(soup)
 
-    #dish name
-    name = soup.find('h1', attrs={"class" : "heading-1"}).text.strip()
-    
-    #dish ingredients
-    ingredients = create_ingredients(soup)
+        #dish preperation time
+        time = create_preparation_time(soup)
 
-    #dish preperation time
-    time = create_preparation_time(soup)
-
-    #dish complicacity level
-    level = create_level(soup)
+        #dish complicacity level
+        level = create_level(soup)
+        
+        #dish prepare method
+        method = create_method(soup)
+        
+        #dish image link
+        image = create_image(soup)
+        
+        #put everything into tuple and put onto data list
+        recipe = (name, ingredients, time, level, method, image, recipe_url)
+        
+        data.append(recipe)
     
-    #dish prepare method
-    method = create_method(soup)
-    
-    #dish image link
-    image = create_image(soup)
-    
-    #put everything into tuple and put onto data list
-    recipe = (name, ingredients, time, level, method, image, recipe_url)
-    
-    data.append(recipe)
-    
+    except:
+        pass
 #put all gathered data into table
 cur.executemany("INSERT INTO recipe VALUES(?, ?, ?, ?, ?, ?, ?)", data)
 
 db.commit()
 
-res = cur.execute("SELECT url FROM recipe")
-print(res.fetchall())
+a = cur.execute("SELECT level FROM recipe")
+print(a.fetchall())
+

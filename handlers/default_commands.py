@@ -8,7 +8,6 @@ from loader import dp
 from keyboards.navigation import navigation_keyboard
 from states.navigation import Navigation
 
-
 #start command response
 @dp.message_handler(CommandStart(), state="*")
 async def start_handler(message: Message):
@@ -43,3 +42,4 @@ async def help_handler(message: Message):
 
     #setting state to navigation at the start
     await Navigation.PICKING_OPTION.set()
+
