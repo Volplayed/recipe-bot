@@ -1,2 +1,5 @@
+#file types
 .env
+.db
+#folders
 */__pycache__

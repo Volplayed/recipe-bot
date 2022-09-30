@@ -138,7 +138,7 @@ except:
 
 
 #site to be scraped url
-url=f'https://www.bbcgoodfood.com/recipes/collection/family-meal-recipes?page=1'
+url=f'https://www.bbcgoodfood.com/recipes/collection/student-recipes'
 response = requests.get(url)
 
 #initilization of bs4

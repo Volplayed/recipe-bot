@@ -1,3 +1,4 @@
+from logging import Filter
 from msilib.schema import Error
 from aiogram import dispatcher
 from aiogram.dispatcher.filters import CommandStart, Command
@@ -7,71 +8,13 @@ from aiogram.types.reply_keyboard import ReplyKeyboardRemove
 from loader import dp
 from keyboards.navigation import navigation_keyboard
 from states.navigation import Navigation
-from keyboards.filters import filters_keyboard
+from keyboards.filters import filters_keyboard, time_keyboard, ingredients_keyboard, lelvel_keyboard
 from states.filters import Filters
 import database.get_data as database
-
-#filters class
-class Filters_container():
-    def __init__(self, ingredients: list, time: int, level: str):
-        #variables to be used
-        self.ingredients = ingredients
-        self.time = time
-        self.level = level
+from utils.Filter_Container import Filters_container
 
 
-    #sets everything to default values
-    def reset(self):
-        self.ingredients = []
-        self.time = 0
-        self.level = "Any"
-
-    #makes a beautiful current filter string
-    def get_string(self):
-        #ingredients string making
-        ingredients = ''
-
-        if len(self.ingredients) > 0:
-            #get each ingredient and put into string
-            for ingredient in self.ingredients:
-                if ingredients == '': #is empty
-                    ingredients += ingredient
-                else:
-                    ingredients += f', {ingredient}'
-        else: #if no ingredients are set
-            ingredients = 'Any'
-        
-        #time string making
-        time = ''
-
-        if self.time != 0: #if filter is set
-            time = f"{self.time}"
-        else:
-            time = 'Any'
-        
-        #level string
-        level = self.level
-
-        #final string
-        text = f"Currently applied filters:\nIngredients: {ingredients}\nTime: {time}\nComplexity: {level}"
-
-        return text
-    
-    #set ingredients
-    def set_ingredients(self, text):
-        try:
-            #clear current ingredients
-            self.ingredients = []
-
-            #split input
-            ingredients = text.split(',')
-
-            #add each ingredient to the list
-            for ingredient in ingredients:
-                if (ingredient.strip()) != '': #is not empty string
-                    self.ingredients.append(ingredient.strip())
-        except:
-            pass
+########################################################################################
 
 #random command response with /random (any state)
 @dp.message_handler(commands='random', state="*")
@@ -122,13 +65,14 @@ async def filters_handler(message: Message):
     #setting state to filters menu
     await Filters.MENU.set()
 
+########################INGREDINETS########################
 #ingredients command response with Ingredients
 @dp.message_handler(text="Ingredients", state=Filters.MENU)
 async def filters_handler(message: Message):
-    #filters dict of applied filters
+
     await message.answer(
-        "Enter ingredients you need divided with comma( , )",
-        reply_markup=ReplyKeyboardRemove()
+        "Enter ingredients you need, divided with comma( , )",
+        reply_markup=ingredients_keyboard
         )
     
     #setting state to ingredients input
@@ -136,13 +80,68 @@ async def filters_handler(message: Message):
 
 #ingredients recieve from user
 @dp.message_handler(state=Filters.INGREDIENTS)
-async def filters_handler(message: Message):
-    #filters dict of applied filters
+async def ingredients_handler(message: Message):
+    #setting filter ingredients from message
     filters.set_ingredients(message.text)
+
     await message.answer(
         filters.get_string(),
         reply_markup=filters_keyboard
         )
     
+    #setting state to filters menu
+    await Filters.MENU.set()
+
+##############################TIME#########################
+#time command response with Time
+@dp.message_handler(text="Time", state=Filters.MENU)
+async def filters_handler(message : Message):
+
+    await message.answer(
+        "Enter the amount of time (in minutes and only numbers)",
+        reply_markup=time_keyboard
+        )
+    
+    #setting state to filters time
+    await Filters.TIME.set()
+
+#time recive from user
+@dp.message_handler(state=Filters.TIME)
+async def time_handler(message : Message):
+    #set filters time
+    filters.set_time(message.text)
+
+    await message.answer(
+        filters.get_string(),
+        reply_markup=filters_keyboard
+        )
+
+    #setting state to filters menu
+    await Filters.MENU.set()
+
+####################LEVEL###########################
+#level command response with Complexity
+@dp.message_handler(text="Complexity", state=Filters.MENU)
+async def filters_handler(message : Message):
+
+    await message.answer(
+        "Choose the complexity level",
+        reply_markup=lelvel_keyboard
+        )
+    
+    #setting state to filters level
+    await Filters.LEVEL.set()
+
+#level recive from user
+@dp.message_handler(state=Filters.LEVEL)
+async def time_handler(message : Message):
+    #set filters level
+    filters.set_level(message.text)
+
+    await message.answer(
+        filters.get_string(),
+        reply_markup=filters_keyboard
+        )
+
     #setting state to filters menu
     await Filters.MENU.set()

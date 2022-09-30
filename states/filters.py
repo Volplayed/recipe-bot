@@ -7,3 +7,9 @@ class Filters(StatesGroup):
 
     #ingredients getting state
     INGREDIENTS = State()
+
+    #time getting state
+    TIME = State()
+
+    #level getting state
+    LEVEL = State()
