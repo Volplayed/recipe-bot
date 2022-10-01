@@ -145,3 +145,38 @@ async def time_handler(message : Message):
 
     #setting state to filters menu
     await Filters.MENU.set()
+
+#################READY########################
+#ready command response with Ready
+@dp.message_handler(text="Ready", state=Filters.MENU)
+async def ready_handler(message : Message):
+    try:
+        #gets recipe data with filters from database
+        data = database.get_recipe_with_filters(filters.get_dict())
+
+        await dp.bot.send_photo(chat_id=message.chat.id, photo=data['image'])
+
+        await message.answer(
+            f"""
+        {data['name'].strip()}
+        Preparation time: {data['time']} mins
+        Complexity: {data['level'].strip()}
+        Ingredients:
+        {data['ingredients'].strip()}
+        How to cook:
+        {data['method'].strip()}
+        {data['url'].strip()}
+            """, 
+        reply_markup=filters_keyboard
+        )
+    except:
+        #if nothing was found
+        await message.answer(
+            f"""
+        Unfortunately nothing was found with your filters.
+        Try changing some filters
+            """, 
+        reply_markup=filters_keyboard
+        )
+    #setting state to navigation at the start
+    await Filters.MENU.set()

@@ -92,11 +92,19 @@ def create_level(soup):
 
     #formated string. elements[1] because level is second element of the mini data list
     text = f"{elements[1].text}"
+    #check if text is one of 3 available levels
+    if text == "Easy":
+        return text
     
-    #check if page has level by checking its length
-    if len(text.split()) != 1:
-        text = 'Unknown'.split()
-    return ''.join(text)
+    elif text == "More effort":
+        return text
+
+    elif text == "A challenge":
+        return text
+
+    #if page has no level or it is unknown
+    else:
+        return 'Unknown'
 
 #create preparation method string
 def create_method(soup):
@@ -136,60 +144,63 @@ try:
 except:
     pass
 
+#miltiply inputs loop
+while True:
+    #site to be scraped url
+    url=input("URL: ")
 
-#site to be scraped url
-url=f'https://www.bbcgoodfood.com/recipes/collection/student-recipes'
-response = requests.get(url)
+    #if input is stop break the loop
+    if url == "stop":
+        break
 
-#initilization of bs4
-soup = BeautifulSoup(response.text, 'html.parser')
-
-#list of a elements with link to the recipe
-recipe_link_element_list = soup.find_all('a', attrs={"class":"link d-block"})
-
-#list holding information in dicts that will be put in database
-data = list()
-
-for element in recipe_link_element_list:
-    try:
-        #make url to recipe from the element 
-        link = element['href']
-        recipe_url = f"https://www.bbcgoodfood.com{link}"
-        
-        #open recipe url
-        response = requests.get(recipe_url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        #dish name
-        name = soup.find('h1', attrs={"class" : "heading-1"}).text.strip()
-        
-        #dish ingredients
-        ingredients = create_ingredients(soup)
-
-        #dish preperation time
-        time = create_preparation_time(soup)
-
-        #dish complicacity level
-        level = create_level(soup)
-        
-        #dish prepare method
-        method = create_method(soup)
-        
-        #dish image link
-        image = create_image(soup)
-        
-        #put everything into tuple and put onto data list
-        recipe = (name, ingredients, time, level, method, image, recipe_url)
-        
-        data.append(recipe)
+    response = requests.get(url)
     
-    except:
-        pass
-#put all gathered data into table
-cur.executemany("INSERT INTO recipe VALUES(?, ?, ?, ?, ?, ?, ?)", data)
+    #initilization of bs4
+    soup = BeautifulSoup(response.text, 'html.parser')
 
-db.commit()
+    #list of a elements with link to the recipe
+    recipe_link_element_list = soup.find_all('a', attrs={"class":"standard-card-new__article-title"})
 
-a = cur.execute("SELECT level FROM recipe")
-print(a.fetchall())
+    #list holding information in dicts that will be put in database
+    data = list()
+
+    for element in recipe_link_element_list:
+        try:
+            #make url to recipe from the element 
+            link = element['href']
+            recipe_url = f"https://www.bbcgoodfood.com{link}"
+            
+            #open recipe url
+            response = requests.get(recipe_url)
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            #dish name
+            name = soup.find('h1', attrs={"class" : "heading-1"}).text.strip()
+            
+            #dish ingredients
+            ingredients = create_ingredients(soup)
+
+            #dish preperation time
+            time = create_preparation_time(soup)
+
+            #dish complicacity level
+            level = create_level(soup)
+            
+            #dish prepare method
+            method = create_method(soup)
+            
+            #dish image link
+            image = create_image(soup)
+            
+            #put everything into tuple and put onto data list
+            recipe = (name, ingredients, time, level, method, image, recipe_url)
+            
+            data.append(recipe)
+        
+        except:
+            pass
+    #put all gathered data into table
+    cur.executemany("INSERT INTO recipe VALUES(?, ?, ?, ?, ?, ?, ?)", data)
+
+    db.commit()
 

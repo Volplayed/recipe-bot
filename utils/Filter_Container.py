@@ -44,6 +44,12 @@ class Filters_container():
 
         return text
     
+    #returns dict with data
+    def get_dict(self):
+        data = {'ingredients' : self.ingredients, 'time' : self.time, 'level' : self.level}
+
+        return data
+
     #set ingredients
     def set_ingredients(self, text : str):
         try:

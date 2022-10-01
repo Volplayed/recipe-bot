@@ -30,7 +30,7 @@ time_keyboard = ReplyKeyboardMarkup([
 #buttons for complexity level options
 lelvel_keyboard = ReplyKeyboardMarkup([
     #three inline buttons (first row)
-    [KeyboardButton("Easy"), KeyboardButton("Medium"), KeyboardButton("Hard")],
+    [KeyboardButton("Easy"), KeyboardButton("More effort"), KeyboardButton("A challenge")],
 
     #one einline button (second row)
     [KeyboardButton("Any")]
