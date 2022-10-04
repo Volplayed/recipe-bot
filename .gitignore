@@ -6,3 +6,8 @@
 #folders
 */__pycache__
 recipes.db
+__pycache__
+
+.vscode
+
+.vscode/settings.json

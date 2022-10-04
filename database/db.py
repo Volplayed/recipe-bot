@@ -1,4 +1,4 @@
-from multiprocessing.spawn import prepare
+
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
@@ -144,7 +144,10 @@ try:
 except:
     pass
 
-#miltiply inputs loop
+#url list
+urls = list()
+
+#miltiply inputs loop saving everything to list
 while True:
     #site to be scraped url
     url=input("URL: ")
@@ -153,6 +156,11 @@ while True:
     if url == "stop":
         break
 
+    #add to url list
+    urls.append(url)
+
+#for each url in list
+for url in urls:
     response = requests.get(url)
     
     #initilization of bs4
@@ -204,3 +212,5 @@ while True:
 
     db.commit()
 
+a = cur.execute("SELECT level FROM recipe")
+print(a.fetchall())

@@ -3,22 +3,22 @@ from random import randint
 #get every otehr element with name of element
 def get_other_elements(name, cur):
     #get all other elements from element with this name
-    ingredients = cur.execute(f"SELECT ingredients FROM recipe WHERE name='{name}'")
+    ingredients = cur.execute(f'''SELECT ingredients FROM recipe WHERE name="{name}"''')
     ingredients = ingredients.fetchone()[0]
 
-    time = cur.execute(f"SELECT time FROM recipe WHERE name='{name}'")
+    time = cur.execute(f'''SELECT time FROM recipe WHERE name="{name}"''')
     time = time.fetchone()[0]
 
-    level = cur.execute(f"SELECT level FROM recipe WHERE name='{name}'")
+    level = cur.execute(f'''SELECT level FROM recipe WHERE name="{name}"''')
     level = level.fetchone()[0]
 
-    method = cur.execute(f"SELECT method FROM recipe WHERE name='{name}'")
+    method = cur.execute(f'''SELECT method FROM recipe WHERE name="{name}"''')
     method = method.fetchone()[0]
 
-    image = cur.execute(f"SELECT image FROM recipe WHERE name='{name}'")
+    image = cur.execute(f'''SELECT image FROM recipe WHERE name="{name}"''')
     image = image.fetchone()[0]
 
-    url = cur.execute(f"SELECT url FROM recipe WHERE name='{name}'")
+    url = cur.execute(f'''SELECT url FROM recipe WHERE name="{name}"''')
     url = url.fetchone()[0]
 
     return ingredients, time, level, method, image, url
@@ -85,6 +85,12 @@ def get_recipe_with_filters(filters : dict):
         names = cur.execute("SELECT name FROM recipe")
         names = names.fetchall()
 
+    #if no filters are applied
+    elif time_filter == 0 and level_filter == "Any" and ingredients_filter == []:
+        #return random recipe
+        data = get_random_recipe()
+        return data
+        
     #list with names which have appropriate ingredients
     appr_names = []
 
@@ -97,9 +103,10 @@ def get_recipe_with_filters(filters : dict):
         data_ingredients = data_ingredients.fetchone()
 
         #if has ingredients from filter save to list
+        #temp int list
+        temp = []
         for ingredient in ingredients_filter:
-            #temp int list
-            temp = []
+            
             #if ingredient in the data_ingredients save True
             if ingredient.lower() in data_ingredients[0].lower():
                 temp.append(1)

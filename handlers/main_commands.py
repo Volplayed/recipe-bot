@@ -1,5 +1,4 @@
 from logging import Filter
-from msilib.schema import Error
 from aiogram import dispatcher
 from aiogram.dispatcher.filters import CommandStart, Command
 from aiogram.types.message import Message
@@ -173,8 +172,9 @@ async def ready_handler(message : Message):
         #if nothing was found
         await message.answer(
             f"""
-        Unfortunately nothing was found with your filters.
-        Try changing some filters
+        Unfortunately nothing was found with your filters,
+        or some errors occured
+        Try again or change some filters
             """, 
         reply_markup=filters_keyboard
         )
