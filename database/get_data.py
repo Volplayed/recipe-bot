@@ -65,12 +65,12 @@ def get_recipe_with_filters(filters : dict):
     level_filter = filters["level"]
 
     #check what filters are applied
-    if time_filter != 0 and type(time_filter) is int: #if only time filter is applied
+    if time_filter != 0 and type(time_filter) is int and level_filter == "Any": #if only time filter is applied
         #get names with this filter
         names = cur.execute(f"SELECT name FROM recipe WHERE time<={int(time_filter)}")
         names = names.fetchall()
 
-    elif level_filter != "Any": #if only level filter is applied
+    elif level_filter != "Any" and time_filter == 0: #if only level filter is applied
         #get names with this filter
         names = cur.execute(f"SELECT name FROM recipe WHERE level='{level_filter}'")
         names = names.fetchall()
